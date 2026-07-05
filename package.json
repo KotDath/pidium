@@ -6,5 +6,6 @@
 	"keywords": ["pi-package"],
 	"pi": {
 		"extensions": ["./index.ts"]
-	}
+	},
+	"files": ["*.ts", "src/**/*.ts", "themes/**/*.json", "README.md", "!**/*.test.ts"]
 }
