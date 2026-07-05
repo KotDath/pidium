@@ -7,6 +7,8 @@
 
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import * as fs from "node:fs";
+import * as os from "node:os";
 import type {
 	ExtensionAPI,
 	ExtensionCommandContext,
@@ -22,6 +24,48 @@ import {
 } from "@earendil-works/pi-tui";
 
 const baseDir = dirname(fileURLToPath(import.meta.url));
+const pidiumStateDir = join(os.homedir(), ".pi", "agent");
+const savedThemePath = join(pidiumStateDir, "pidium-theme.json");
+
+function loadSavedThemeName(): string | undefined {
+	try {
+		return JSON.parse(fs.readFileSync(savedThemePath, "utf8")).theme as string;
+	} catch {
+		return undefined;
+	}
+}
+
+function saveThemeName(name: string): void {
+	fs.mkdirSync(pidiumStateDir, { recursive: true });
+	fs.writeFileSync(savedThemePath, JSON.stringify({ theme: name }, null, "\t"));
+}
+
+function hexToXtermColor(hex: string): string {
+	const clean = hex.replace("#", "");
+	const r = clean.slice(0, 2);
+	const g = clean.slice(2, 4);
+	const b = clean.slice(4, 6);
+	return `rgb:${r}/${g}/${b}`;
+}
+
+function setTerminalBackground(hex: string | undefined): void {
+	if (!hex) return;
+	process.stdout.write(`\x1b]11;${hexToXtermColor(hex)}\x07`);
+}
+
+function getThemeBackground(theme: Theme): string | undefined {
+	const exportColors = (theme as unknown as { export?: { pageBg?: string } }).export;
+	return exportColors?.pageBg;
+}
+
+function applyThemeByName(ui: ExtensionUIContext, name: string): boolean {
+	const theme = ui.getTheme(name);
+	if (!theme) return false;
+
+	ui.setTheme(theme);
+	setTerminalBackground(getThemeBackground(theme));
+	return true;
+}
 
 const THEME_FILES = [
 	"opencode.json",
@@ -32,10 +76,22 @@ const THEME_FILES = [
 ];
 
 export default function (pi: ExtensionAPI) {
-	pi.on("resources_discover", () => {
+	pi.on("resources_discover", (_event, ctx) => {
+		const saved = loadSavedThemeName();
+		if (saved) {
+			const ui = ctx.ui;
+			setTimeout(() => {
+				applyThemeByName(ui, saved);
+			}, 0);
+		}
+
 		return {
 			themePaths: THEME_FILES.map((file) => join(baseDir, "themes", file)),
 		};
+	});
+
+	pi.on("session_shutdown", () => {
+		process.stdout.write("\x1b]111\x07");
 	});
 
 	const openSelector = async (_args: string, ctx: ExtensionCommandContext) => {
@@ -57,6 +113,8 @@ export default function (pi: ExtensionAPI) {
 		);
 
 		if (selectedName) {
+			saveThemeName(selectedName);
+			applyThemeByName(ui, selectedName);
 			ui.notify(`Theme set to ${selectedName}`, "info");
 		}
 	};
@@ -110,6 +168,7 @@ class ThemeSelectorComponent implements Focusable {
 	handleInput(data: string): void {
 		if (matchesKey(data, "escape")) {
 			this.ui.setTheme(this.initialTheme);
+			setTerminalBackground(getThemeBackground(this.initialTheme));
 			this.done(undefined);
 			return;
 		}
@@ -117,7 +176,7 @@ class ThemeSelectorComponent implements Focusable {
 		if (matchesKey(data, "return")) {
 			const selected = this.themes[this.selectedIndex];
 			if (selected) {
-				this.ui.setTheme(selected.name);
+				applyThemeByName(this.ui, selected.name);
 			}
 			this.done(selected?.name);
 			return;
@@ -153,7 +212,8 @@ class ThemeSelectorComponent implements Focusable {
 			return s + " ".repeat(Math.max(0, len - vis));
 		};
 
-		const row = (content: string): string => theme.fg("border", "│") + pad(content, innerW) + theme.fg("border", "│");
+		const row = (content: string): string =>
+			theme.fg("border", "│") + pad(content, innerW) + theme.fg("border", "│");
 
 		lines.push(theme.fg("border", `╭${"─".repeat(innerW)}╮`));
 		lines.push(row(` ${theme.fg("accent", theme.bold("Select Theme"))}`));
@@ -202,11 +262,10 @@ class ThemeSelectorComponent implements Focusable {
 	dispose(): void {}
 
 	private applyTheme(name: string): void {
-		const result = this.ui.setTheme(name);
-		if (!result.success) {
-			this.errorMessage = result.error;
-		} else {
+		if (applyThemeByName(this.ui, name)) {
 			this.errorMessage = undefined;
+		} else {
+			this.errorMessage = `Theme not found: ${name}`;
 		}
 		this.tui.requestRender();
 		this.syncScroll();
