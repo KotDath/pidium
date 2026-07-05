@@ -40,30 +40,11 @@ function saveThemeName(name: string): void {
 	fs.writeFileSync(savedThemePath, JSON.stringify({ theme: name }, null, "\t"));
 }
 
-function hexToXtermColor(hex: string): string {
-	const clean = hex.replace("#", "");
-	const r = clean.slice(0, 2);
-	const g = clean.slice(2, 4);
-	const b = clean.slice(4, 6);
-	return `rgb:${r}/${g}/${b}`;
-}
-
-function setTerminalBackground(hex: string | undefined): void {
-	if (!hex) return;
-	process.stdout.write(`\x1b]11;${hexToXtermColor(hex)}\x07`);
-}
-
-function getThemeBackground(theme: Theme): string | undefined {
-	const exportColors = (theme as unknown as { export?: { pageBg?: string } }).export;
-	return exportColors?.pageBg;
-}
-
 function applyThemeByName(ui: ExtensionUIContext, name: string): boolean {
 	const theme = ui.getTheme(name);
 	if (!theme) return false;
 
 	ui.setTheme(theme);
-	setTerminalBackground(getThemeBackground(theme));
 	return true;
 }
 
@@ -88,10 +69,6 @@ export default function (pi: ExtensionAPI) {
 		return {
 			themePaths: THEME_FILES.map((file) => join(baseDir, "themes", file)),
 		};
-	});
-
-	pi.on("session_shutdown", () => {
-		process.stdout.write("\x1b]111\x07");
 	});
 
 	const openSelector = async (_args: string, ctx: ExtensionCommandContext) => {
@@ -168,7 +145,6 @@ class ThemeSelectorComponent implements Focusable {
 	handleInput(data: string): void {
 		if (matchesKey(data, "escape")) {
 			this.ui.setTheme(this.initialTheme);
-			setTerminalBackground(getThemeBackground(this.initialTheme));
 			this.done(undefined);
 			return;
 		}
