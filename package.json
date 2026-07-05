@@ -1,0 +1,10 @@
+{
+	"name": "pidium",
+	"version": "0.1.0",
+	"private": true,
+	"description": "OpenCode theme pack for Pi with /themes selector",
+	"keywords": ["pi-package"],
+	"pi": {
+		"extensions": ["./index.ts"]
+	}
+}
