@@ -1,15 +1,5 @@
-import type {
-	ExtensionCommandContext,
-	ExtensionUIContext,
-	Theme,
-} from "@earendil-works/pi-coding-agent";
-import {
-	type Focusable,
-	matchesKey,
-	truncateToWidth,
-	type TUI,
-	visibleWidth,
-} from "@earendil-works/pi-tui";
+import type { ExtensionUIContext, Theme } from "@earendil-works/pi-coding-agent";
+import { type Focusable, matchesKey, type TUI, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { applyThemeByName } from "../apply.ts";
 
 export class ThemeSelectorComponent implements Focusable {
@@ -66,11 +56,9 @@ export class ThemeSelectorComponent implements Focusable {
 		}
 
 		if (matchesKey(data, "up")) {
-			this.selectedIndex =
-				this.selectedIndex === 0 ? this.themes.length - 1 : this.selectedIndex - 1;
+			this.selectedIndex = this.selectedIndex === 0 ? this.themes.length - 1 : this.selectedIndex - 1;
 		} else if (matchesKey(data, "down")) {
-			this.selectedIndex =
-				this.selectedIndex === this.themes.length - 1 ? 0 : this.selectedIndex + 1;
+			this.selectedIndex = this.selectedIndex === this.themes.length - 1 ? 0 : this.selectedIndex + 1;
 		} else {
 			return;
 		}
@@ -91,8 +79,7 @@ export class ThemeSelectorComponent implements Focusable {
 			return s + " ".repeat(Math.max(0, len - vis));
 		};
 
-		const row = (content: string): string =>
-			theme.fg("border", "│") + pad(content, innerW) + theme.fg("border", "│");
+		const row = (content: string): string => theme.fg("border", "│") + pad(content, innerW) + theme.fg("border", "│");
 
 		lines.push(theme.fg("border", `╭${"─".repeat(innerW)}╮`));
 		lines.push(row(` ${theme.fg("accent", theme.bold("Select Theme"))}`));

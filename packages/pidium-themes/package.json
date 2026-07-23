@@ -1,0 +1,19 @@
+{
+	"name": "@pidium/themes",
+	"version": "0.1.0",
+	"private": true,
+	"description": "OpenCode theme pack for Pi with /themes selector",
+	"type": "module",
+	"keywords": ["pi-package", "pi", "themes"],
+	"pi": {
+		"extensions": ["./index.ts"]
+	},
+	"files": ["index.ts", "src/**/*.ts", "themes/**/*.json", "README.md", "!**/*.test.ts"],
+	"scripts": {
+		"typecheck": "tsc --project ./tsconfig.json --noEmit"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": ">=0.80.0",
+		"@earendil-works/pi-tui": ">=0.80.0"
+	}
+}

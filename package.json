@@ -1,11 +1,24 @@
 {
 	"name": "pidium",
-	"version": "0.1.0",
 	"private": true,
-	"description": "OpenCode theme pack for Pi with /themes selector",
-	"keywords": ["pi-package"],
+	"packageManager": "pnpm@10.33.0",
+	"workspaces": ["packages/*"],
 	"pi": {
-		"extensions": ["./index.ts"]
+		"extensions": ["./packages/pidium-themes/index.ts"]
 	},
-	"files": ["*.ts", "src/**/*.ts", "themes/**/*.json", "README.md", "!**/*.test.ts"]
+	"scripts": {
+		"typecheck": "pnpm -r run typecheck",
+		"test": "pnpm -r --if-present run test",
+		"lint": "biome check --error-on-warnings .",
+		"lint:fix": "biome check --fix ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.10",
+		"@earendil-works/pi-coding-agent": "^0.80.3",
+		"@earendil-works/pi-tui": "^0.80.3",
+		"typescript": "^5.7.0"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	}
 }

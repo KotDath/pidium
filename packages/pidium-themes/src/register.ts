@@ -1,15 +1,9 @@
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { THEME_FILES } from "./files.ts";
-import { loadSavedThemeName } from "./store.ts";
 import { applyThemeByName } from "./apply.ts";
-import {
-	createThemesCommandHandler,
-	createThemesShortcutHandler,
-} from "./command.ts";
-
-const baseDir = dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url)))));
+import { createThemesCommandHandler, createThemesShortcutHandler } from "./command.ts";
+import { THEME_FILES, THEMES_DIR } from "./files.ts";
+import { loadSavedThemeName } from "./store.ts";
 
 export function registerThemesFeature(pi: ExtensionAPI): void {
 	pi.on("resources_discover", (_event, ctx) => {
@@ -22,7 +16,7 @@ export function registerThemesFeature(pi: ExtensionAPI): void {
 		}
 
 		return {
-			themePaths: THEME_FILES.map((file) => join(baseDir, "themes", file)),
+			themePaths: THEME_FILES.map((file) => join(THEMES_DIR, file)),
 		};
 	});
 
