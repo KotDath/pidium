@@ -4,7 +4,10 @@
 	"packageManager": "pnpm@10.33.0",
 	"workspaces": ["packages/*"],
 	"pi": {
-		"extensions": ["./packages/pidium-themes/index.ts"]
+		"extensions": [
+			"./packages/pidium-themes/index.ts",
+			"./packages/pidium-web/index.ts"
+		]
 	},
 	"scripts": {
 		"typecheck": "pnpm -r run typecheck",
@@ -14,9 +17,13 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.10",
+		"@earendil-works/pi-agent-core": "^0.80.3",
+		"@earendil-works/pi-ai": "^0.80.3",
 		"@earendil-works/pi-coding-agent": "^0.80.3",
 		"@earendil-works/pi-tui": "^0.80.3",
-		"typescript": "^5.7.0"
+		"typebox": "^1.1.38",
+		"typescript": "^5.7.0",
+		"vitest": "^3.2.4"
 	},
 	"engines": {
 		"node": ">=20.0.0"
